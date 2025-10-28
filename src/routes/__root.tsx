@@ -2,13 +2,9 @@ import * as React from "react";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 
 export const rootRoute = createRootRoute({
-  component: RootComponent,
-});
-
-function RootComponent() {
-  return (
+  component: () => (
     <React.Fragment>
       <Outlet />
     </React.Fragment>
-  );
-}
+  ),
+});
