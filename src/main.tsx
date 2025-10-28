@@ -4,8 +4,18 @@ import "./index.css";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { rootRoute } from "./routes/__root.tsx";
 import { testRoute } from "./routes/test.tsx";
+import { loginRoute } from "./routes/auth/login.tsx";
+import { registerRouter } from "./routes/auth/register.tsx";
+import { adminRoute } from "./routes/admin.tsx";
+import { userRoute } from "./routes/user.tsx";
 
-const routeTree = rootRoute.addChildren([testRoute]);
+const routeTree = rootRoute.addChildren([
+  testRoute,
+  loginRoute,
+  registerRouter,
+  adminRoute,
+  userRoute,
+]);
 
 const router = createRouter({ routeTree });
 
