@@ -7,10 +7,10 @@ import { useAuth } from "../../stores/useAuth";
 export default function UserSidebar() {
   const { user, handleLogout, initAuth } = useAuth();
   const { resetForm } = useForm();
-  const [activeMenu, setActiveMenu] = useState("/user");
+  const [activeMenu, setActiveMenu] = useState("/exam");
 
   const menuItems = [
-    { id: "dashboard", icon: Home, label: "Dashboard", path: "/user" },
+    { id: "dashboard", icon: Home, label: "Dashboard", path: "/exam" },
   ];
 
   useEffect(() => initAuth(), []);

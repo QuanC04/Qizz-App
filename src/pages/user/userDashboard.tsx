@@ -15,14 +15,14 @@ export default function UserDashboard() {
     };
     fetchData();
   }, []);
-  if (user?.role !== "user") return "/403";
+  const filterForms = forms.filter((form) => form.status === "public");
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4 m-5">Danh sách Form</h1>
       <ul className="grid-cols-3 grid">
-        {forms.map((form) => (
-          <Link to={`/user/exam/${form.formId}`}>
+        {filterForms.map((form) => (
+          <Link to={`/exam/${form.formId}`}>
             <li
               key={form.formId}
               className="m-5 shadow-xl h-[30vh] flex flex-col items-start p-2 rounded-2xl  relative ">

@@ -54,7 +54,7 @@ export const useForm = create<FormState>((set, get) => ({
   formId: nanoid(),
   title: { titleText: "", description: "" },
   questions: [],
-  status: "draft",
+  status: "public",
   setTitle: (titleText, description) =>
     set((state) => ({
       title: { ...state.title, titleText, description },
@@ -64,6 +64,7 @@ export const useForm = create<FormState>((set, get) => ({
     set((state) => ({
       questions: [...state.questions, { ...question, id: nanoid() }],
     })),
+
   updateQuestion: (id, updates) =>
     set((state) => ({
       questions: state.questions.map((q) =>
@@ -81,6 +82,7 @@ export const useForm = create<FormState>((set, get) => ({
         formId,
         title,
         questions,
+        status,
         createdAt: Date(),
       };
       await setDoc(doc(db, "forms", formId), formData, { merge: true });
@@ -161,7 +163,7 @@ export const useForm = create<FormState>((set, get) => ({
         } else if (userAnswer === question.correctAnswer)
           totalScore += question.score;
       });
-      await addDoc(collection(db, "forms", formId, "submissions"), {
+      await setDoc(doc(db, "forms", formId, "submissions", userId), {
         userId,
         answers,
         totalScore,
