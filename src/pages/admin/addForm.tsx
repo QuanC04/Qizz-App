@@ -173,6 +173,17 @@ export default function AddForm() {
                       )}
                     </div>
                   ))}
+                  {(question.type === "radio" ||
+                    question.type === "checkbox") && (
+                    <button
+                      onClick={() => {
+                        const newOptions = [...question.options, ""];
+                        updateQuestion(question.id, { options: newOptions });
+                      }}
+                      className="mt-2 cursor-pointer font-semibold hover:underline text-sm w-fit">
+                      + Thêm lựa chọn
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

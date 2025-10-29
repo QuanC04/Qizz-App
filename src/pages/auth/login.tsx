@@ -13,8 +13,7 @@ export default function LoginPage() {
   const onLogin = async () => {
     const userData = await handleLogin(email, password);
     if (userData?.role === "admin") navigate({ to: "/admin" });
-    else if (userData?.role === "user") navigate({ to: "/user" });
-    console.log(user);
+    else if (userData?.role === "user") navigate({ to: "/exam" });
   };
 
   return (

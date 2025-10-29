@@ -6,7 +6,7 @@ import ExamPage from "../pages/user/exam/$formId";
 
 const _userRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/user",
+  path: "/exam",
   component: () => <UserLayout />,
 });
 
@@ -18,7 +18,7 @@ export const userRoute = _userRoute.addChildren([
   }),
   createRoute({
     getParentRoute: () => _userRoute,
-    path: "/exam/$formId",
+    path: "/$formId",
     component: () => <ExamPage />,
   }),
 ]);

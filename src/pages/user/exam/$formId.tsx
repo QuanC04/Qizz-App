@@ -1,13 +1,12 @@
 import { useParams } from "@tanstack/react-router";
 import { useForm } from "../../../stores/userForm";
 import { use, useEffect, useState } from "react";
-import { auth } from "../../../services/firebaseConfig";
 import { useAuth } from "../../../stores/useAuth";
 
 export default function ExamPage() {
   const { user, initAuth } = useAuth();
-  const labels = ["A", "B", "C", "D"];
-  const { formId } = useParams({ from: "/user/exam/$formId" });
+  const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const { formId } = useParams({ from: "/exam/$formId" });
   const { getForm, title, questions, submitForm } = useForm();
   const [answers, setAnswers] = useState<
     Record<string, number | number[] | string | null>

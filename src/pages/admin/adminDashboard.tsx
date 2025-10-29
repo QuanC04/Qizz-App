@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
 import { useForm } from "../../stores/userForm";
-import { Edit, MoreVertical, Trash2 } from "lucide-react";
+import {
+  Edit,
+  FileEdit,
+  Globe,
+  Lock,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../stores/useAuth";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../services/firebaseConfig";
 
 export default function AdminDashboard() {
   const toggleMenu = (formId: string) => {
     setOpenMenuId(openMenuId === formId ? null : formId);
   };
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"public" | "draft">("public");
   const { getAllForm, deleteForm } = useForm();
   const [forms, setForms] = useState<any[]>([]);
   const { user } = useAuth();
+  const filteredForms = forms.filter((form) => form.status === activeTab);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,8 +37,29 @@ export default function AdminDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4 m-5">Danh sách Form</h1>
+      {/* Tabs */}
+      <div className="flex gap-4 mb-6">
+        <button
+          onClick={() => setActiveTab("public")}
+          className={`px-4 py-2 rounded-lg font-semibold cursor-pointer ${
+            activeTab === "public"
+              ? "bg-black text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}>
+          Công khai
+        </button>
+        <button
+          onClick={() => setActiveTab("draft")}
+          className={`px-4 py-2 rounded-lg font-semibold cursor-pointer ${
+            activeTab === "draft"
+              ? "bg-black text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}>
+          Bản nháp
+        </button>
+      </div>
       <ul className="grid-cols-3 grid">
-        {forms.map((form) => (
+        {filteredForms.map((form) => (
           <li
             key={form.formId}
             className="m-5 shadow-xl h-[30vh] flex flex-col items-start p-2 rounded-2xl  relative ">
@@ -42,8 +74,48 @@ export default function AdminDashboard() {
             {/* Dropdown Menu */}
             {openMenuId === form.formId && (
               <div className="absolute right-0 top-5 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10 ">
+                {form.status === "draft" ? (
+                  <button
+                    onClick={async () => {
+                      await updateDoc(doc(db, "forms", form.formId), {
+                        status: "public",
+                      });
+                      setForms((prev) =>
+                        prev.map((f) =>
+                          f.formId === form.formId
+                            ? { ...f, status: "public" }
+                            : f
+                        )
+                      );
+                      setOpenMenuId(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-700  rounded-t-lg cursor-pointer">
+                    {" "}
+                    <Globe size={18} className="text-blue-600" />
+                    <span>Công Khai</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      await updateDoc(doc(db, "forms", form.formId), {
+                        status: "draft",
+                      });
+                      setForms((prev) =>
+                        prev.map((f) =>
+                          f.formId === form.formId
+                            ? { ...f, status: "draft" }
+                            : f
+                        )
+                      );
+                      setOpenMenuId(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-700  rounded-t-lg cursor-pointer">
+                    <Lock size={18} className="text-blue-600" />
+                    <span>Bản Nháp</span>
+                  </button>
+                )}
                 <Link to={`/admin/form/${form.formId}`}>
-                  <button className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-700  rounded-t-lg cursor-pointer">
+                  <button className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-700 cursor-pointer border-t border-gray-100">
                     <Edit size={18} className="text-blue-600" />
                     <span className="font-medium">Chỉnh sửa</span>
                   </button>

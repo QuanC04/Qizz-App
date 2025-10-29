@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Home, LogOut, Plus, User } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useForm } from "../../stores/userForm";
 import { useAuth } from "../../stores/useAuth";
 
 export default function AdminSidebar() {
+  const router = useRouterState();
+  const currentPath = router.location.pathname;
   const { user, handleLogout, initAuth } = useAuth();
   const { resetForm } = useForm();
   const [activeMenu, setActiveMenu] = useState("");
@@ -12,7 +14,7 @@ export default function AdminSidebar() {
   useEffect(() => initAuth(), []);
 
   const menuItems = [
-    { id: "dashboard", icon: Home, label: "Dashboard", path: "/admin/" },
+    { id: "dashboard", icon: Home, label: "Dashboard", path: "/admin" },
     { id: "create", icon: Plus, label: "Tạo Form", path: "/admin/create-form" },
   ];
 
@@ -34,6 +36,7 @@ export default function AdminSidebar() {
         <ul>
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = currentPath === item.path;
 
             return (
               <Link
@@ -43,7 +46,7 @@ export default function AdminSidebar() {
                   setActiveMenu(item.path), resetForm();
                 }}
                 className={`w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-lg transition-all duration-200 ${
-                  activeMenu === item.path
+                  activeMenu === item.path || isActive
                     ? "bg-white text-black shadow-lg transform scale-105"
                     : "text-black hover:shadow-2xl "
                 }`}>
