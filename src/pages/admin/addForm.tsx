@@ -19,8 +19,6 @@ export default function AddForm() {
     resetForm,
   } = useForm();
 
-  if (user?.role !== "admin") return "/403";
-
   return (
     <div className="min-h-full bg-gradient p-6 shadow-2xl rounded-2xl">
       <div className=" mx-auto">
@@ -142,34 +140,44 @@ export default function AddForm() {
                       {/* Nội dung option*/}
 
                       {question.type === "text" ? (
-                        <input
-                          type="text"
-                          value={option}
-                          onChange={(e) => {
-                            const newOptions = [...question.options];
-                            newOptions[index] = e.target.value;
-                            updateQuestion(question.id, {
-                              options: newOptions,
-                              correctAnswer: e.target.value,
-                            });
-                          }}
-                          placeholder="Nhập đáp án"
-                          className="flex-1 px-3 py-2 border rounded-lg"
-                        />
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...question.options];
+                              newOptions[index] = e.target.value;
+                              updateQuestion(question.id, {
+                                options: newOptions,
+                                correctAnswer: e.target.value,
+                              });
+                            }}
+                            placeholder="Nhập đáp án"
+                            className="flex px-3 py-2 border rounded-lg w-full"
+                          />
+                          <button className="absolute top-2 right-2 opacity-50 cursor-pointer">
+                            Thêm
+                          </button>
+                        </div>
                       ) : (
-                        <input
-                          type="text"
-                          value={option}
-                          onChange={(e) => {
-                            const newOptions = [...question.options];
-                            newOptions[index] = e.target.value;
-                            updateQuestion(question.id, {
-                              options: newOptions,
-                            });
-                          }}
-                          placeholder={`Lựa chọn ${index}`}
-                          className="flex-1 px-3 py-2 border rounded-lg"
-                        />
+                        <div className="relative w-1/3 group">
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...question.options];
+                              newOptions[index] = e.target.value;
+                              updateQuestion(question.id, {
+                                options: newOptions,
+                              });
+                            }}
+                            placeholder={`Lựa chọn ${index}`}
+                            className="flex px-3 py-2 border rounded-lg w-9/10"
+                          />
+                          <button className="absolute top-2 right-2 opacity-0 group-hover:opacity-70 group-focus-within:opacity-70 transition-opacity cursor-pointer">
+                            <Trash2 />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -263,6 +271,10 @@ export default function AddForm() {
         <button
           className="mt-6 w-full bg-black    text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl  hover:scale-[1.02] transition-all 0 flex items-center justify-center gap-2 cursor-pointer"
           onClick={() => {
+            useForm.setState({
+              createdBy: user?.email || user?.id || "unknown",
+            });
+
             saveForm(), resetForm();
           }}>
           <Plus size={20} />

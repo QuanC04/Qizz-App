@@ -1,5 +1,4 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -29,11 +28,18 @@ interface FormData {
   title: Title;
   questions: Question[];
 }
+interface Submissions {
+  userId: string;
+  answer: Record<string, any>[];
+  totalScore: number;
+  submitAt: Date;
+}
 interface FormState {
   formId: string;
   title: Title;
   questions: Question[];
   status: string;
+  createdBy: string;
   setTitle: (titleText: string, description: string) => void;
   addQuestion: (question: Question) => void;
   updateQuestion: (id: string, updates: Partial<Question>) => void;
@@ -43,11 +49,12 @@ interface FormState {
   resetForm: () => void;
   getAllForm: () => Promise<FormData[]>;
   getForm: (formId: string) => Promise<FormData | null>;
+  getSubmissionForm: (formId: string) => Promise<Submissions[]>;
   deleteForm: (formId: string) => Promise<FormData[]>;
   submitForm: (
     formId: string,
     userId: string,
-    answers: Record<string, any>
+    answers: Record<string, any>[]
   ) => Promise<void>;
 }
 export const useForm = create<FormState>((set, get) => ({
@@ -55,6 +62,7 @@ export const useForm = create<FormState>((set, get) => ({
   title: { titleText: "", description: "" },
   questions: [],
   status: "public",
+  createdBy: "",
   setTitle: (titleText, description) =>
     set((state) => ({
       title: { ...state.title, titleText, description },
@@ -68,7 +76,7 @@ export const useForm = create<FormState>((set, get) => ({
   updateQuestion: (id, updates) =>
     set((state) => ({
       questions: state.questions.map((q) =>
-        q.id == id ? { ...q, ...updates } : q
+        q.id === id ? { ...q, ...updates } : q
       ),
     })),
   deleteQuestion: (id) =>
@@ -77,10 +85,11 @@ export const useForm = create<FormState>((set, get) => ({
     })),
   saveForm: async () => {
     try {
-      const { formId, title, questions, status } = get();
+      const { formId, title, questions, status, createdBy } = get();
       const formData = {
         formId,
         title,
+        createdBy,
         questions,
         status,
         createdAt: Date(),
@@ -130,6 +139,21 @@ export const useForm = create<FormState>((set, get) => ({
       return null;
     }
   },
+  getSubmissionForm: async (formId) => {
+    try {
+      const snap = await getDocs(
+        collection(db, "forms", formId, "submissions")
+      );
+      const submissions = snap.docs.map((doc) => ({
+        userId: doc.id,
+        ...doc.data(),
+      })) as Submissions[];
+      return submissions;
+    } catch (err) {
+      console.error("lỗi: ", err);
+      return [];
+    }
+  },
   deleteForm: async (formId) => {
     try {
       await deleteDoc(doc(db, "forms", formId));
@@ -149,23 +173,50 @@ export const useForm = create<FormState>((set, get) => ({
     try {
       const { getForm } = get();
       const formData = await getForm(formId);
+      const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
       let totalScore = 0;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      const userData = userSnap.data();
+      const userEmail = userData?.email || "Không rõ";
+      //   Tính  Điểm
       formData?.questions.forEach((question) => {
-        const userAnswer = answers[question.id];
+        const answerObject = answers.find(
+          (a) => Object.keys(a)[0] === question.id
+        );
+        const userAnswer = answerObject ? Object.values(answerObject)[0] : null;
         if (question.type === "checkbox") {
           const correctAnswer = question.correctAnswer as number[];
           const isCorrect =
-            answers[question.id].length === correctAnswer?.length &&
-            answers[question.id].every((ans: number) =>
-              correctAnswer.includes(ans)
-            );
+            userAnswer?.length === correctAnswer?.length &&
+            userAnswer.every((ans: number) => correctAnswer.includes(ans));
           if (isCorrect) totalScore += question.score;
         } else if (userAnswer === question.correctAnswer)
           totalScore += question.score;
       });
+      //   format answer
+      const convertedAnswers: Record<string, any>[] = [];
+      formData?.questions.forEach((q, index) => {
+        const answerObject = answers.find((a) => Object.keys(a)[0] === q.id);
+        const userAnswer = answerObject ? Object.values(answerObject)[0] : null;
+        let formattedAnswer: string | null = null;
+
+        if (Array.isArray(userAnswer)) {
+          formattedAnswer = userAnswer
+            .map((userAnswer) => labels[userAnswer])
+            .join(",");
+        } else if (typeof userAnswer === "number" && q.type === "radio") {
+          formattedAnswer = labels[userAnswer];
+        } else {
+          formattedAnswer = userAnswer ?? null;
+        }
+        convertedAnswers.push({
+          [`Câu ${index + 1}`]: formattedAnswer,
+        });
+      });
       await setDoc(doc(db, "forms", formId, "submissions", userId), {
         userId,
-        answers,
+        userEmail,
+        answers: convertedAnswers,
         totalScore,
         submitAt: new Date().toISOString(),
       });

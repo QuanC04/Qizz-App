@@ -44,7 +44,7 @@ export default function RegisterForm() {
           </button>
         </div>
         <div className=" w-full relative mt-0 p-6 pt-0 flex">
-          <div className="w-2/3">
+          <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 w-full text-left p-1">
               Nhập Lại Mật Khẩu
             </label>
@@ -59,21 +59,6 @@ export default function RegisterForm() {
                   : "border-gray-200 placeholder:text-gray-400 "
               }`}
             />
-          </div>
-          <div className="w-1/3 ml-3">
-            <label className="block text-sm font-medium text-gray-700 w-full text-left p-1">
-              Vai Trò
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              name="role"
-              id="role"
-              className="w-full border border-gray-300 rounded-lg h-12 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black">
-              <option value="">Chọn vai trò </option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </select>
           </div>
         </div>
 

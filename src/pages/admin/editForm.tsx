@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 export default function EditForm() {
   const [showAddQuestion, setShowAddQuestion] = useState(true);
   const [showType, setShowType] = useState(false);
-  const { formId } = useParams({ from: "/admin/form/$formId" });
+  const { formId } = useParams({ from: "/form/edit/$formId" });
   const {
     title,
     questions,
@@ -159,7 +159,7 @@ export default function EditForm() {
                               });
                             }}
                             placeholder="Nhập đáp án"
-                            className="flex-1 px-3 py-2 border rounded-lg"
+                            className="flex px-3 py-2 border rounded-lg w-1/2"
                           />
                         ) : (
                           <input
@@ -173,7 +173,7 @@ export default function EditForm() {
                               });
                             }}
                             placeholder={`Lựa chọn ${index}`}
-                            className="flex-1 px-3 py-2 border rounded-lg"
+                            className="flex px-3 py-2 border rounded-lg w-1/3"
                           />
                         )}
                       </div>
@@ -254,7 +254,7 @@ export default function EditForm() {
             )}
           </div>
           {/* Lưu Form */}
-          <Link to="/admin">
+          <Link to="/form">
             <button
               className="mt-6 w-full bg-black    text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl  hover:scale-[1.02] transition-all 0 flex items-center justify-center gap-2 cursor-pointer"
               onClick={() => {

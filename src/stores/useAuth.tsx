@@ -30,6 +30,7 @@ interface AuthState {
     role: string
   ) => Promise<void>;
   handleLogout: () => Promise<void>;
+  getUser: (userId: string) => Promise<User | null>;
   initAuth: () => void;
 }
 
@@ -112,6 +113,16 @@ export const useAuth = create<AuthState>((set) => ({
   handleLogout: async () => {
     await auth.signOut();
     set({ user: null });
+  },
+  getUser: async (userId) => {
+    try {
+      const snap = await getDoc(doc(db, "users", userId));
+      const userData = snap.data();
+      return userData as User;
+    } catch (err) {
+      console.error("lỗi: ", err);
+      return null;
+    }
   },
   initAuth: () => {
     set({ loading: true });

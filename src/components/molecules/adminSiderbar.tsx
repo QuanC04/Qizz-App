@@ -14,8 +14,8 @@ export default function AdminSidebar() {
   useEffect(() => initAuth(), []);
 
   const menuItems = [
-    { id: "dashboard", icon: Home, label: "Dashboard", path: "/admin" },
-    { id: "create", icon: Plus, label: "Tạo Form", path: "/admin/create-form" },
+    { id: "dashboard", icon: Home, label: "Dashboard", path: "/form" },
+    { id: "create", icon: Plus, label: "Tạo Form", path: "/form/create-form" },
   ];
 
   return (

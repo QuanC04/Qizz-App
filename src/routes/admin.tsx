@@ -4,10 +4,11 @@ import AdminLayout from "../layout/admin";
 import AdminDashboard from "../pages/admin/adminDashboard";
 import AddForm from "../pages/admin/addForm";
 import EditForm from "../pages/admin/editForm";
+import FormDetail from "../pages/admin/responForm";
 
 const _adminRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/admin",
+  path: "/form",
   component: () => <AdminLayout />,
 });
 export const adminRoute = _adminRoute.addChildren([
@@ -23,7 +24,12 @@ export const adminRoute = _adminRoute.addChildren([
   }),
   createRoute({
     getParentRoute: () => _adminRoute,
-    path: "/form/$formId",
+    path: "/edit/$formId",
     component: () => <EditForm />,
+  }),
+  createRoute({
+    getParentRoute: () => _adminRoute,
+    path: "/form/$formId",
+    component: () => <FormDetail />,
   }),
 ]);

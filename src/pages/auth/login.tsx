@@ -11,9 +11,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const onLogin = async () => {
-    const userData = await handleLogin(email, password);
-    if (userData?.role === "admin") navigate({ to: "/admin" });
-    else if (userData?.role === "user") navigate({ to: "/exam" });
+    await handleLogin(email, password);
+    navigate({ to: "/form" });
   };
 
   return (
