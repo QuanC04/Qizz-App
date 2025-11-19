@@ -12,8 +12,8 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 interface User {
   id: string;
   email: string;
-  role: string;
   createAt: string;
+  completedForms?: string[];
 }
 interface AuthState {
   user: User | null;
@@ -24,18 +24,14 @@ interface AuthState {
     password: string
   ) => Promise<Partial<User> | undefined>;
   handleGoogleLogin: () => Promise<void>;
-  handleRegister: (
-    email: string,
-    password: string,
-    role: string
-  ) => Promise<void>;
+  handleRegister: (email: string, password: string) => Promise<void>;
   handleLogout: () => Promise<void>;
   getUser: (userId: string) => Promise<User | null>;
   initAuth: () => void;
 }
 
 export const useAuth = create<AuthState>((set) => ({
-  user: { id: "", email: "", password: "", role: "", createAt: "" },
+  user: { id: "", email: "", password: "", createAt: "", completedForms: [] },
   loading: false,
   error: "",
   handleLogin: async (email, password) => {
@@ -59,7 +55,6 @@ export const useAuth = create<AuthState>((set) => ({
         user: {
           id: userData.id,
           email: userData.email,
-          role: userData.role,
           createAt: userData.createAt,
         },
       });
@@ -68,7 +63,6 @@ export const useAuth = create<AuthState>((set) => ({
       return {
         id: user.uid,
         email: userData.email,
-        role: userData.role,
         createAt: userData.createAt,
       };
     } catch (err: any) {
@@ -90,7 +84,7 @@ export const useAuth = create<AuthState>((set) => ({
       console.error("lỗi đăng nhập :", error);
     }
   },
-  handleRegister: async (email, password, role) => {
+  handleRegister: async (email, password) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -102,7 +96,6 @@ export const useAuth = create<AuthState>((set) => ({
         id: user.uid,
         email,
         password,
-        role,
         createAt: new Date(),
       });
       alert("Đăng ký thành công");
@@ -134,7 +127,6 @@ export const useAuth = create<AuthState>((set) => ({
           user: {
             id: userData?.id,
             email: userData?.email,
-            role: userData?.role,
             createAt: userData?.createAt,
           },
           loading: false,

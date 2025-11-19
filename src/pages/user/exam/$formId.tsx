@@ -1,13 +1,14 @@
-import { useParams } from "@tanstack/react-router";
-import { useForm } from "../../../stores/userForm";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { useForm } from "../../../stores/useForm";
 import { use, useEffect, useState } from "react";
 import { useAuth } from "../../../stores/useAuth";
 
 export default function ExamPage() {
+  const navigate = useNavigate();
   const { user, initAuth } = useAuth();
   const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
   const { formId } = useParams({ from: "/exam/$formId" });
-  const { getForm, title, questions, submitForm } = useForm();
+  const { getForm, title, questions, submitForm, requireLogin } = useForm();
   const [answers, setAnswers] = useState<
     Record<string, number | number[] | string | null>[]
   >([]);
@@ -24,6 +25,9 @@ export default function ExamPage() {
     return (
       <div className="p-6 text-center text-gray-500">Đang tải form...</div>
     );
+  if (requireLogin && !user) {
+    return <div>Vui lòng đăng nhập trước khi làm bài</div>;
+  }
   return (
     <div className="min-h-full bg-gradient p-6 shadow-2xl rounded-2xl">
       <h1 className="text-3xl font-bold mb-2">{title?.titleText}</h1>
@@ -152,7 +156,7 @@ export default function ExamPage() {
             alert("Vui lòng đăng nhập trước khi gửi biểu mẫu!");
             return;
           }
-          submitForm(formId, user.id, answers);
+          submitForm(formId, user.id, answers, navigate);
         }}
         className="mt-6 w-full bg-black text-white py-3 rounded-xl font-semibold hover:scale-[1.01] transition cursor-pointer">
         Nộp bài

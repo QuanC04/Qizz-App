@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "../../stores/userForm";
+import { useForm } from "../../stores/useForm";
 import {
   Edit,
   Globe,
@@ -27,6 +27,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
       const data = await getAllForm();
       const myForms = data.filter(
         (form: any) => form.createdBy === user?.email || user?.id
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
       setForms(myForms);
     };
     fetchData();
-  }, []);
+  }, [user]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

@@ -8,7 +8,6 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
-  const [role, setRole] = useState("");
   const { handleRegister } = useAuth();
   return (
     <div className="flex items-center justify-center w-full ">
@@ -64,7 +63,7 @@ export default function RegisterForm() {
 
         <button
           className="border h-10 w-9/10 rounded-md bg-black cursor-pointer font-medium text-white mt-5"
-          onClick={() => handleRegister(email, password, role)}>
+          onClick={() => handleRegister(email, password)}>
           Đăng Ký
         </button>
 

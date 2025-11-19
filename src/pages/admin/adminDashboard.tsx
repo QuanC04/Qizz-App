@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "../../stores/userForm";
+import { useForm } from "../../stores/useForm";
 import {
   Edit,
   Globe,
@@ -8,7 +8,7 @@ import {
   MoreVertical,
   Trash2,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "../../stores/useAuth";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebaseConfig";
@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const { getAllForm, deleteForm } = useForm();
   const [forms, setForms] = useState<any[]>([]);
   const { user } = useAuth();
-
+  const router = useRouterState();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
       setForms(myForms);
     };
     fetchData();
-  }, []);
+  }, [user, router.location.pathname]);
   const filteredForms = forms.filter((form) => form.status === activeTab);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Home, LogOut, User } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useForm } from "../../stores/userForm";
+import { useForm } from "../../stores/useForm";
 import { useAuth } from "../../stores/useAuth";
 
 export default function UserSidebar() {
@@ -67,7 +67,6 @@ export default function UserSidebar() {
               </div>
               <div className="flex-col">
                 <p className="font-semibold text-sm">{user.email}</p>
-                <p className="text-xs">{user.role}</p>
               </div>
             </div>
             <Link to="/login">

@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
 
-interface Question {
+export interface Question {
   type: string;
   id: string;
   questionText: string;
@@ -26,9 +26,12 @@ interface Title {
 interface FormData {
   formId: string;
   title: Title;
+  oneSubmissionOnly: boolean;
+  requireLogin: boolean;
   questions: Question[];
 }
 interface Submissions {
+  submissionId: string;
   userId: string;
   answer: Record<string, any>[];
   totalScore: number;
@@ -40,6 +43,12 @@ interface FormState {
   questions: Question[];
   status: string;
   createdBy: string;
+  requireLogin: boolean;
+  oneSubmissionOnly: boolean;
+  setSettings: (settings: {
+    requireLogin?: boolean;
+    oneSubmissionOnly?: boolean;
+  }) => void;
   setTitle: (titleText: string, description: string) => void;
   addQuestion: (question: Question) => void;
   updateQuestion: (id: string, updates: Partial<Question>) => void;
@@ -54,7 +63,8 @@ interface FormState {
   submitForm: (
     formId: string,
     userId: string,
-    answers: Record<string, any>[]
+    answers: Record<string, any>[],
+    navigate: any
   ) => Promise<void>;
 }
 export const useForm = create<FormState>((set, get) => ({
@@ -63,6 +73,13 @@ export const useForm = create<FormState>((set, get) => ({
   questions: [],
   status: "public",
   createdBy: "",
+  requireLogin: false,
+  oneSubmissionOnly: false,
+  setSettings: (settings) =>
+    set((state) => ({
+      ...state,
+      ...settings,
+    })),
   setTitle: (titleText, description) =>
     set((state) => ({
       title: { ...state.title, titleText, description },
@@ -85,13 +102,23 @@ export const useForm = create<FormState>((set, get) => ({
     })),
   saveForm: async () => {
     try {
-      const { formId, title, questions, status, createdBy } = get();
+      const {
+        formId,
+        title,
+        questions,
+        status,
+        createdBy,
+        requireLogin,
+        oneSubmissionOnly,
+      } = get();
       const formData = {
         formId,
         title,
         createdBy,
         questions,
         status,
+        requireLogin,
+        oneSubmissionOnly,
         createdAt: Date(),
       };
       await setDoc(doc(db, "forms", formId), formData, { merge: true });
@@ -132,6 +159,8 @@ export const useForm = create<FormState>((set, get) => ({
         formId: form.formId,
         title: form.title,
         questions: form.questions,
+        requireLogin: form.requireLogin,
+        oneSubmissionOnly: form.oneSubmissionOnly,
       });
       return form;
     } catch (err) {
@@ -145,7 +174,7 @@ export const useForm = create<FormState>((set, get) => ({
         collection(db, "forms", formId, "submissions")
       );
       const submissions = snap.docs.map((doc) => ({
-        userId: doc.id,
+        submissionId: doc.id,
         ...doc.data(),
       })) as Submissions[];
       return submissions;
@@ -169,15 +198,25 @@ export const useForm = create<FormState>((set, get) => ({
       return [];
     }
   },
-  submitForm: async (formId, userId, answers) => {
+  submitForm: async (formId,userId, answers, navigate) => {
     try {
       const { getForm } = get();
+      const submissionId = nanoid();
       const formData = await getForm(formId);
       const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
       let totalScore = 0;
       const userSnap = await getDoc(doc(db, "users", userId));
       const userData = userSnap.data();
       const userEmail = userData?.email || "Không rõ";
+      //   chỉ nộp 1 lần
+      if (formData?.oneSubmissionOnly && userId) {
+        const docRef = doc(db, "forms", formId, "submissions", userId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          alert("Bạn đã nộp bài này rồi, không thể nộp lại!");
+          return;
+        }
+      }
       //   Tính  Điểm
       formData?.questions.forEach((question) => {
         const answerObject = answers.find(
@@ -203,6 +242,7 @@ export const useForm = create<FormState>((set, get) => ({
         if (Array.isArray(userAnswer)) {
           formattedAnswer = userAnswer
             .map((userAnswer) => labels[userAnswer])
+            .sort()
             .join(",");
         } else if (typeof userAnswer === "number" && q.type === "radio") {
           formattedAnswer = labels[userAnswer];
@@ -213,14 +253,19 @@ export const useForm = create<FormState>((set, get) => ({
           [`Câu ${index + 1}`]: formattedAnswer,
         });
       });
-      await setDoc(doc(db, "forms", formId, "submissions", userId), {
-        userId,
-        userEmail,
-        answers: convertedAnswers,
-        totalScore,
-        submitAt: new Date().toISOString(),
-      });
-      alert(`Nộp bài thành công \nBạn đạt được ${totalScore} điểm`);
+      await setDoc(
+        doc(db, "forms", formId, "submissions",submissionId),
+        {
+          submissionId,
+          userId,
+          userEmail,
+          answers: convertedAnswers,
+          totalScore,
+          submitAt: new Date().toISOString(),
+        },
+        { merge: false }
+      );
+      navigate({ to: `/exam/response/${formId}` });
     } catch (err) {
       console.error("Lỗi: ", err);
     }

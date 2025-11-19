@@ -1,14 +1,18 @@
-import { Plus, Trash2 } from "lucide-react";
-import { useForm } from "../../stores/userForm";
+import { Plus, Send, Trash2 } from "lucide-react";
+import { useForm } from "../../stores/useForm";
 import { nanoid } from "nanoid";
 import { useState } from "react";
 import { useAuth } from "../../stores/useAuth";
+import ShareExamLinkDialog from "../../components/dialogShareLink";
+import ListQuestion from "@/components/listQuestion";
+import { Link } from "@tanstack/react-router";
 
 export default function AddForm() {
   const { user } = useAuth();
   const [showAddQuestion, setShowAddQuestion] = useState(true);
   const [showType, setShowType] = useState(false);
   const {
+    formId,
     title,
     questions,
     setTitle,
@@ -24,10 +28,6 @@ export default function AddForm() {
       <div className=" mx-auto">
         {/* --- Header Form --- */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Tạo Form/Quiz Mới
-          </h1>
-
           {/* Tiêu đề Form */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -55,148 +55,14 @@ export default function AddForm() {
             />
           </div>
         </div>
-
         {/* --- Danh sách câu hỏi --- */}
-        <div>
-          {questions.map((question, index) => (
-            <div
-              key={question.id}
-              className="bg-white rounded-xl shadow-lg p-6 flex flex-col gap-4 mb-4">
-              {/* Header câu hỏi */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="bg-black text-white px-4 py-1 rounded-full text-sm font-bold">
-                    Câu {index + 1}
-                  </span>
-                  <button
-                    onClick={() => deleteQuestion(question.id)}
-                    className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
 
-              {/* Nội dung câu hỏi */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nội dung câu hỏi <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={question.questionText}
-                  onChange={(e) =>
-                    updateQuestion(question.id, {
-                      questionText: e.target.value,
-                    })
-                  }
-                  placeholder="Nhập câu hỏi..."
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none transition-colors"
-                />
-              </div>
+        <ListQuestion
+          questions={questions}
+          deleteQuestion={deleteQuestion}
+          updateQuestion={updateQuestion}
+        />
 
-              {/* Các lựa chọn trả lời */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Các lựa chọn trả lời <span className="text-red-500">*</span>
-                </label>
-
-                <div className="flex flex-col gap-2">
-                  {question.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="relative">
-                        {question.type === "checkbox" && (
-                          <input
-                            type="checkbox"
-                            checked={(
-                              question.correctAnswer as number[]
-                            )?.includes(index)}
-                            onChange={(e) => {
-                              let answers = question.correctAnswer as number[];
-
-                              const updatedAnswers = e.target.checked
-                                ? [...answers, index]
-                                : answers.filter((i) => i !== index);
-                              updateQuestion(question.id, {
-                                correctAnswer: updatedAnswers,
-                              });
-                            }}
-                            className="w-5 h-5 cursor-pointer"
-                          />
-                        )}
-                        {question.type === "radio" && (
-                          <input
-                            type={question.type}
-                            checked={question.correctAnswer === index}
-                            onChange={() =>
-                              updateQuestion(question.id, {
-                                correctAnswer: index,
-                              })
-                            }
-                            className="w-5 h-5 cursor-pointer"
-                          />
-                        )}
-                      </div>
-
-                      {/* Nội dung option*/}
-
-                      {question.type === "text" ? (
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={option}
-                            onChange={(e) => {
-                              const newOptions = [...question.options];
-                              newOptions[index] = e.target.value;
-                              updateQuestion(question.id, {
-                                options: newOptions,
-                                correctAnswer: e.target.value,
-                              });
-                            }}
-                            placeholder="Nhập đáp án"
-                            className="flex px-3 py-2 border rounded-lg w-full"
-                          />
-                          <button className="absolute top-2 right-2 opacity-50 cursor-pointer">
-                            Thêm
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="relative w-1/3 group">
-                          <input
-                            type="text"
-                            value={option}
-                            onChange={(e) => {
-                              const newOptions = [...question.options];
-                              newOptions[index] = e.target.value;
-                              updateQuestion(question.id, {
-                                options: newOptions,
-                              });
-                            }}
-                            placeholder={`Lựa chọn ${index}`}
-                            className="flex px-3 py-2 border rounded-lg w-9/10"
-                          />
-                          <button className="absolute top-2 right-2 opacity-0 group-hover:opacity-70 group-focus-within:opacity-70 transition-opacity cursor-pointer">
-                            <Trash2 />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {(question.type === "radio" ||
-                    question.type === "checkbox") && (
-                    <button
-                      onClick={() => {
-                        const newOptions = [...question.options, ""];
-                        updateQuestion(question.id, { options: newOptions });
-                      }}
-                      className="mt-2 cursor-pointer font-semibold hover:underline text-sm w-fit">
-                      + Thêm lựa chọn
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
         {/* Thêm câu hỏi */}
         <div>
           {showAddQuestion && (
@@ -270,16 +136,28 @@ export default function AddForm() {
         {/* Lưu Form */}
         <button
           className="mt-6 w-full bg-black    text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl  hover:scale-[1.02] transition-all 0 flex items-center justify-center gap-2 cursor-pointer"
-          onClick={() => {
+          onClick={async () => {
             useForm.setState({
               createdBy: user?.email || user?.id || "unknown",
             });
 
-            saveForm(), resetForm();
+            await saveForm(), resetForm();
           }}>
           <Plus size={20} />
           Lưu Form
         </button>
+        {/* share */}
+        <div className="flex gap-x-2">
+          <div className="w-1/2">
+            <ShareExamLinkDialog formId={formId} />
+          </div>
+          <Link to={`/form/${formId}`} className="w-1/2">
+            <button className="mt-6 w-full bg-purple-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <Send size={20} />
+              Xem phản hồi
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
