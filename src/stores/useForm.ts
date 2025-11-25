@@ -4,7 +4,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  query,
   setDoc,
+  where,
 } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
@@ -29,6 +32,8 @@ interface FormData {
   oneSubmissionOnly: boolean;
   requireLogin: boolean;
   questions: Question[];
+  enableTimer: boolean;
+    timerMinutes: number;
 }
 interface Submissions {
   submissionId: string;
@@ -41,13 +46,19 @@ interface FormState {
   formId: string;
   title: Title;
   questions: Question[];
-  status: string;
+  status:string;
+  saving: boolean;
+    enableTimer: boolean;
+  timerMinutes:number;
   createdBy: string;
   requireLogin: boolean;
   oneSubmissionOnly: boolean;
+  lastSubmissionId:string;
   setSettings: (settings: {
     requireLogin?: boolean;
     oneSubmissionOnly?: boolean;
+    enableTimer?: boolean;
+    timerMinutes?: number;
   }) => void;
   setTitle: (titleText: string, description: string) => void;
   addQuestion: (question: Question) => void;
@@ -64,17 +75,21 @@ interface FormState {
     formId: string,
     userId: string,
     answers: Record<string, any>[],
-    navigate: any
+
   ) => Promise<void>;
 }
 export const useForm = create<FormState>((set, get) => ({
   formId: nanoid(),
   title: { titleText: "", description: "" },
   questions: [],
-  status: "public",
+  status:"public",
+  saving: false,
+  enableTimer: false,
+  timerMinutes: 30,
   createdBy: "",
   requireLogin: false,
   oneSubmissionOnly: false,
+  lastSubmissionId:"",
   setSettings: (settings) =>
     set((state) => ({
       ...state,
@@ -101,30 +116,38 @@ export const useForm = create<FormState>((set, get) => ({
       questions: state.questions.filter((q) => q.id !== id),
     })),
   saveForm: async () => {
+    set({ saving: true });
     try {
       const {
         formId,
         title,
-        questions,
         status,
+        questions,
         createdBy,
+        enableTimer,
+        timerMinutes,
         requireLogin,
         oneSubmissionOnly,
       } = get();
       const formData = {
         formId,
         title,
+        status,
         createdBy,
         questions,
-        status,
+        enableTimer,
+        timerMinutes,
         requireLogin,
         oneSubmissionOnly,
         createdAt: Date(),
       };
       await setDoc(doc(db, "forms", formId), formData, { merge: true });
-      alert("Form đã được lưu thành công!");
+      set({ saving: false });
+
     } catch (err) {
+        set({ saving: false });
       alert(" Lưu form thất bại!");
+
     }
   },
   resetForm: () =>
@@ -161,6 +184,8 @@ export const useForm = create<FormState>((set, get) => ({
         questions: form.questions,
         requireLogin: form.requireLogin,
         oneSubmissionOnly: form.oneSubmissionOnly,
+        enableTimer: form.enableTimer,
+        timerMinutes: form.timerMinutes,
       });
       return form;
     } catch (err) {
@@ -198,7 +223,7 @@ export const useForm = create<FormState>((set, get) => ({
       return [];
     }
   },
-  submitForm: async (formId,userId, answers, navigate) => {
+  submitForm: async (formId,userId, answers) => {
     try {
       const { getForm } = get();
       const submissionId = nanoid();
@@ -208,15 +233,23 @@ export const useForm = create<FormState>((set, get) => ({
       const userSnap = await getDoc(doc(db, "users", userId));
       const userData = userSnap.data();
       const userEmail = userData?.email || "Không rõ";
-      //   chỉ nộp 1 lần
-      if (formData?.oneSubmissionOnly && userId) {
-        const docRef = doc(db, "forms", formId, "submissions", userId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          alert("Bạn đã nộp bài này rồi, không thể nộp lại!");
-          return;
-        }
-      }
+
+      // Kiểm tra chỉ cho phép nộp 1 lần
+if (formData?.oneSubmissionOnly && userId) {
+  const submissionsRef = collection(db, "forms", formId, "submissions");
+  const q = query(
+    submissionsRef,
+    where("userId", "==", userId),
+    limit(1)
+  );
+
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    alert("Bạn đã nộp bài này rồi, không thể nộp lại!");
+    return;
+  }
+}
       //   Tính  Điểm
       formData?.questions.forEach((question) => {
         const answerObject = answers.find(
@@ -253,6 +286,8 @@ export const useForm = create<FormState>((set, get) => ({
           [`Câu ${index + 1}`]: formattedAnswer,
         });
       });
+      set({lastSubmissionId:submissionId});
+      //   Lưu vào firestore
       await setDoc(
         doc(db, "forms", formId, "submissions",submissionId),
         {
@@ -265,7 +300,7 @@ export const useForm = create<FormState>((set, get) => ({
         },
         { merge: false }
       );
-      navigate({ to: `/exam/response/${formId}` });
+
     } catch (err) {
       console.error("Lỗi: ", err);
     }

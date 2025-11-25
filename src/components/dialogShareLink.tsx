@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, Link as LinkIcon } from "lucide-react";
 import { useForm } from "../stores/useForm";
 
 interface ShareExamLinkDialogProps {
   formId: string;
-  onSettingsChange?: (settings: {
-    requireLogin: boolean;
-    oneSubmissionOnly: boolean;
-  }) => void;
 }
 
 export default function ShareExamLinkDialog({
@@ -16,11 +12,27 @@ export default function ShareExamLinkDialog({
   const [openDialog, setOpenDialog] = useState(false);
 
   const examLink = `${window.location.origin}/exam/${formId}`;
-  const { setSettings, requireLogin, oneSubmissionOnly } = useForm();
+
+  const {
+    requireLogin,
+    oneSubmissionOnly,
+    enableTimer,
+    timerMinutes,
+    setSettings,
+    saveForm,
+  } = useForm();
+
+  // Tự động lưu
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveForm();
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [requireLogin, oneSubmissionOnly, enableTimer, timerMinutes]);
 
   return (
     <div>
-      {/* Nút mở dialog */}
       <button
         onClick={() => setOpenDialog(true)}
         className="mt-6 w-full bg-purple-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer">
@@ -28,7 +40,6 @@ export default function ShareExamLinkDialog({
         Tạo link làm bài
       </button>
 
-      {/* Dialog overlay */}
       {openDialog && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative animate-fadeIn">
@@ -52,13 +63,13 @@ export default function ShareExamLinkDialog({
                   navigator.clipboard.writeText(examLink);
                   alert("Đã sao chép link!");
                 }}
-                className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-1 cursor-pointer ">
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-1 cursor-pointer">
                 <Copy size={16} />
                 Sao chép
               </button>
             </div>
 
-            {/*  Cài đặt */}
+            {/* SETTINGS */}
             <div className="space-y-3 border-t pt-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -87,9 +98,41 @@ export default function ShareExamLinkDialog({
                   Chỉ cho phép nộp bài 1 lần
                 </span>
               </label>
+
+              {/* ❗ THÊM GIỚI HẠN THỜI GIAN */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableTimer}
+                  onChange={(e) =>
+                    setSettings({ enableTimer: e.target.checked })
+                  }
+                  className="w-4 h-4"
+                />
+                <span className="text-gray-700 text-sm">
+                  Giới hạn thời gian làm bài
+                </span>
+              </label>
+
+              {/* Nếu bật → hiển thị ô chọn phút */}
+              {enableTimer && (
+                <div className="pl-6 justify-self-start">
+                  <input
+                    type="number"
+                    min={1}
+                    value={timerMinutes || ""}
+                    onChange={(e) =>
+                      setSettings({ timerMinutes: Number(e.target.value) })
+                    }
+                    className="w-24 px-2 py-1 border rounded-lg"
+                    placeholder="Phút"
+                  />
+                  <span className="ml-2 text-sm text-gray-600">phút</span>
+                </div>
+              )}
             </div>
 
-            {/* Nút đóng */}
+            {/* CLOSE */}
             <button
               onClick={() => setOpenDialog(false)}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 cursor-pointer">

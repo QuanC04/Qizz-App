@@ -73,6 +73,9 @@ export default function FormDetail() {
       if (typeof a === "string") {
         return a.charCodeAt(0) - 65;
       }
+      if (q.type === "text" || q.type === "paragraph") {
+        return a;
+      }
 
       return null;
     });
@@ -90,15 +93,32 @@ export default function FormDetail() {
     // Tính số người đúng
     const correctIndex = q.correctAnswer;
 
-    const correctCount = parsedAnswers.filter((ans) => {
-      if (Array.isArray(ans)) {
-        return (
-          ans.length === correctIndex?.length &&
-          ans.every((x) => correctIndex?.includes(x))
-        );
+    let correctCount = 0;
+
+    parsedAnswers.forEach((ans) => {
+      if (ans == null) return;
+
+      if (Array.isArray(ans) && Array.isArray(q.correctAnswer)) {
+        // checkbox
+        if (
+          ans.length === q.correctAnswer.length &&
+          ans.every((x) => q.correctAnswer?.includes(x))
+        ) {
+          correctCount++;
+        }
+      } else if (
+        typeof ans === "string" &&
+        typeof q.correctAnswer === "string"
+      ) {
+        // text
+        if (ans.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) {
+          correctCount++;
+        }
+      } else {
+        // radio
+        if (ans === q.correctAnswer) correctCount++;
       }
-      return ans === correctIndex;
-    }).length;
+    });
 
     const correctRate = ((correctCount / total) * 100).toFixed(0);
 

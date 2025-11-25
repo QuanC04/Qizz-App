@@ -85,6 +85,9 @@ export default function QuestionResult({ questionStat, COLORS }: any) {
       <h3 className="text-lg font-medium text-gray-900 mb-4">
         {questionStat.questionText}
       </h3>
+      <p className="text-sm text-blue-600 mb-4">
+        {questionStat.correctRate}% số người được hỏi trả lời đúng câu hỏi này.
+      </p>
 
       <Chart
         options={data.options}

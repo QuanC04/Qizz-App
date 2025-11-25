@@ -10,7 +10,7 @@ export default function AnswerPage() {
   const { user, initAuth } = useAuth();
   const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
   const { formId } = useParams({ from: "/exam/response/$formId" });
-  const { getForm, title, questions } = useForm();
+  const { getForm, title, questions, lastSubmissionId } = useForm();
 
   const [submission, setSubmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -20,12 +20,18 @@ export default function AnswerPage() {
     getForm(formId);
 
     const fetchSubmission = async () => {
-      if (!user?.id) {
+      if (!lastSubmissionId) {
         setLoading(false);
         return;
       }
       try {
-        const docRef = doc(db, "forms", formId, "submissions", user.id);
+        const docRef = doc(
+          db,
+          "forms",
+          formId,
+          "submissions",
+          lastSubmissionId
+        );
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setSubmission(docSnap.data());
         else setSubmission(null);

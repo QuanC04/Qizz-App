@@ -15,6 +15,7 @@ export default function EditForm() {
   const {
     title,
     questions,
+    saving,
     getForm,
     setTitle,
     deleteQuestion,
@@ -23,6 +24,21 @@ export default function EditForm() {
     saveForm,
     updateForm,
   } = useForm();
+  useEffect(() => {
+    useForm.setState({
+      createdBy: user?.email || user?.id || "unknown",
+    });
+    const timer = setTimeout(() => {
+      saveForm();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [title, questions]);
+  useEffect(() => {
+    useForm.setState({
+      createdBy: user?.email || user?.id || "unknown",
+    });
+  }, [user]);
 
   useEffect(() => {
     getForm(formId);
@@ -34,6 +50,13 @@ export default function EditForm() {
   return (
     <div className="min-h-full bg-gradient p-6 shadow-2xl rounded-2xl">
       <div className=" mx-auto">
+        <div className="text-sm text-gray-500 h-5">
+          {saving ? (
+            <span className="text-yellow-600">Đang lưu...</span>
+          ) : (
+            <span className="text-green-600">Đã lưu ✓</span>
+          )}
+        </div>
         {/* --- Header Form --- */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           {/* Tiêu đề Form */}
@@ -143,9 +166,6 @@ export default function EditForm() {
             <button
               className="mt-6 w-full bg-black    text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl  hover:scale-[1.02] transition-all 0 flex items-center justify-center gap-2 cursor-pointer"
               onClick={async () => {
-                useForm.setState({
-                  createdBy: user?.email || user?.id || "unknown",
-                });
                 await saveForm(), updateForm();
               }}>
               <Plus size={20} />
