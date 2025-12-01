@@ -40,7 +40,7 @@ export default function ExamPage() {
   if (requireLogin && !user) {
     return <div>Vui lòng đăng nhập trước khi làm bài</div>;
   }
-  if (!started) {
+  if (!started && enableTimer) {
     return (
       <div className="min-h-screen bg-white p-6 md:p-12 flex flex-col  items-center ">
         <div className="max-w-2xl">
@@ -76,18 +76,20 @@ export default function ExamPage() {
   }
   return (
     <div className=" bg-gradient p-6  rounded-2xl w-8/10 justify-self-center">
-      <div className=" bg-white p-6 shadow-2xl rounded-2xl  z-50  sticky top-0 h-10 ">
-        <TimerProgress
-          timerMinutes={timerMinutes}
-          formId={formId}
-          submissionDone={submissionDone}
-          onTimeUp={async () => {
-            await submitForm(formId, user?.id as string, answers);
-            setSubmissionDone(true);
-            navigate({ to: `/exam/response/${formId}` });
-          }}
-        />
-      </div>
+      {enableTimer ? (
+        <div className=" bg-white p-6 shadow-2xl rounded-2xl  z-50  sticky top-0 h-10 ">
+          <TimerProgress
+            timerMinutes={timerMinutes}
+            formId={formId}
+            submissionDone={submissionDone}
+            onTimeUp={async () => {
+              await submitForm(formId, user?.id as string, answers);
+              setSubmissionDone(true);
+              navigate({ to: `/exam/response/${formId}` });
+            }}
+          />
+        </div>
+      ) : null}
       <div className=" bg-gradient p-6 shadow-2xl rounded-2xl ">
         <h1 className="text-3xl font-bold mb-2">{title?.titleText}</h1>
         <p className="text-gray-600 mb-6">{title?.description}</p>

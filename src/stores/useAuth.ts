@@ -13,7 +13,7 @@ interface User {
   id: string;
   email: string;
   createAt: string;
-  completedForms?: string[];
+
 }
 interface AuthState {
   user: User | null;
@@ -23,7 +23,7 @@ interface AuthState {
     email: string,
     password: string
   ) => Promise<Partial<User> | undefined>;
-  handleGoogleLogin: () => Promise<void>;
+  handleGoogleLogin: (navigate:any) => Promise<void>;
   handleRegister: (email: string, password: string) => Promise<void>;
   handleLogout: () => Promise<void>;
   getUser: (userId: string) => Promise<User | null>;
@@ -31,7 +31,7 @@ interface AuthState {
 }
 
 export const useAuth = create<AuthState>((set) => ({
-  user: { id: "", email: "", password: "", createAt: "", completedForms: [] },
+  user: { id: "", email: "", createAt: "" },
   loading: false,
   error: "",
   handleLogin: async (email, password) => {
@@ -75,11 +75,26 @@ export const useAuth = create<AuthState>((set) => ({
       set({ loading: false });
     }
   },
-  handleGoogleLogin: async () => {
+  handleGoogleLogin: async (navigate) => {
     const provider = new GoogleAuthProvider();
     try {
       const userCredential = await signInWithPopup(auth, provider);
-      console.log("Đăng nhập thành công", userCredential.user);
+
+      const user = userCredential.user;
+       const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+    // Nếu user chưa tồn tại → tạo mới
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        id: user.uid,
+        email: user.email,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+     navigate({ to: "/form" });
+
     } catch (error) {
       console.error("lỗi đăng nhập :", error);
     }

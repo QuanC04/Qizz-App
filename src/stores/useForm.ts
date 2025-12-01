@@ -18,7 +18,7 @@ export interface Question {
   id: string;
   questionText: string;
   options: string[];
-  correctAnswer: number | number[] | string | null;
+  correctAnswer: number | number[] | string[] | null;
   score: number;
 }
 
@@ -79,7 +79,7 @@ interface FormState {
   ) => Promise<void>;
 }
 export const useForm = create<FormState>((set, get) => ({
-  formId: nanoid(),
+  formId: localStorage.getItem("currentFormId") || nanoid(),
   title: { titleText: "", description: "" },
   questions: [],
   status:"public",
@@ -129,6 +129,7 @@ export const useForm = create<FormState>((set, get) => ({
         requireLogin,
         oneSubmissionOnly,
       } = get();
+      localStorage.setItem("currentFormId", formId);
       const formData = {
         formId,
         title,
@@ -150,12 +151,15 @@ export const useForm = create<FormState>((set, get) => ({
 
     }
   },
-  resetForm: () =>
+  resetForm: () =>{
+    const newId = nanoid();
+    localStorage.setItem("currentFormId", newId);
     set(() => ({
-      formId: nanoid(),
+      formId: newId,
       title: { titleText: "", description: "" },
       questions: [],
-    })),
+    }))
+},
   updateForm: () =>
     set(() => ({
       title: { titleText: "", description: "" },
@@ -262,7 +266,27 @@ if (formData?.oneSubmissionOnly && userId) {
             userAnswer?.length === correctAnswer?.length &&
             userAnswer.every((ans: number) => correctAnswer.includes(ans));
           if (isCorrect) totalScore += question.score;
-        } else if (userAnswer === question.correctAnswer)
+        }
+         else if (question.type === "text") {
+    // correct là string[]; userAnswer là string
+    let correctList = question.correctAnswer ;
+   if (typeof correctList === "string") {
+    try {
+      correctList = JSON.parse(correctList);
+    } catch {
+      correctList = [correctList];
+    }
+  }
+
+  // Đảm bảo correctList là array
+  if (!Array.isArray(correctList)) {
+    correctList = [correctList];
+  }
+    const normalizedUser = String(userAnswer ?? "").trim().toLowerCase();
+    const matched = correctList?.some((ans) => String(ans).trim().toLowerCase() === normalizedUser);
+    if (matched) totalScore += question.score;
+  }
+   else if (userAnswer === question.correctAnswer)
           totalScore += question.score;
       });
       //   format answer

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { exportExcel } from "../utils/exportExcel";
+import { exportExcel } from "../utils/excel";
 import { ArrowDownToLine } from "lucide-react";
 
 export function ExportExce({ submissions }: any) {

@@ -117,10 +117,28 @@ export default function AnswerPage() {
               const correctLabel = labels[q.correctAnswer as number];
               isCorrect = userAnswerStr === correctLabel;
             } else if (q.type === "text") {
-              isCorrect =
-                typeof q.correctAnswer === "string" &&
-                q.correctAnswer.trim().toLowerCase() ===
-                  String(userAnswerStr).trim().toLowerCase();
+              let correct = q.correctAnswer;
+
+              // Nếu correctAnswer là JSON string → parse
+              if (typeof correct === "string") {
+                try {
+                  const parsed = JSON.parse(correct);
+                  correct = parsed;
+                } catch {
+                  // không phải JSON thì giữ nguyên
+                }
+              }
+
+              // Đảm bảo luôn là mảng
+              if (!Array.isArray(correct)) {
+                correct = [correct];
+              }
+
+              const normalizedUser = String(userAnswerStr).trim().toLowerCase();
+
+              isCorrect = correct.some(
+                (ans) => String(ans).trim().toLowerCase() === normalizedUser
+              );
             }
 
             return (
@@ -171,8 +189,8 @@ export default function AnswerPage() {
                       {!isCorrect && q.correctAnswer && (
                         <span className=" text-sm flex items-center">
                           Đáp án đúng:
-                          <div className="text-black h-10 w-10 border rounded-md border-gray-400 items-center flex justify-center">
-                            {q.correctAnswer}{" "}
+                          <div className="text-black h-10 w-auto border rounded-md border-gray-400 items-center flex justify-center">
+                            {JSON.parse(q.correctAnswer).join(",")}
                           </div>
                         </span>
                       )}

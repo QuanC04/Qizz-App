@@ -6,6 +6,8 @@ import { nanoid } from "nanoid";
 import ShareExamLinkDialog from "../../components/dialogShareLink";
 import { useAuth } from "../../stores/useAuth";
 import ListQuestion from "@/components/listQuestion";
+import { exportQuestions, importQuestions } from "@/utils/excel";
+import AddQuestion from "@/components/addQuestion";
 
 export default function EditForm() {
   const { user } = useAuth();
@@ -92,74 +94,38 @@ export default function EditForm() {
             updateQuestion={updateQuestion}
           />
           {/* Thêm câu hỏi */}
-          <div>
-            {showAddQuestion && (
-              <button
-                onClick={() => {
-                  setShowAddQuestion((prev) => !prev);
-                  setShowType((prev) => !prev);
-                }}
-                className="mt-6 w-full bg-white border-2 border-dashed  hover:border-purple-600 hover:text-purple-600 font-semibold py-4 rounded-xl  flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] transition-all">
-                + Thêm câu hỏi
-              </button>
-            )}
-            {showType && (
-              <div>
-                <h2 className="text-sm font-semibold text-gray-600 mb-2">
-                  Chọn loại câu hỏi:
-                </h2>
-                <div className="grid grid-cols-3 gap-2 ">
-                  <button
-                    className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
-                    onClick={() => {
-                      setShowAddQuestion((prev) => !prev);
-                      setShowType((prev) => !prev);
-                      addQuestion({
-                        type: "radio",
-                        id: nanoid(),
-                        questionText: "",
-                        options: ["", "", "", ""],
-                        correctAnswer: null,
-                        score: 1,
-                      });
-                    }}>
-                    Lựa chọn
-                  </button>
-                  <button
-                    className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
-                    onClick={() => {
-                      setShowAddQuestion((prev) => !prev);
-                      setShowType((prev) => !prev);
-                      addQuestion({
-                        type: "checkbox",
-                        id: nanoid(),
-                        questionText: "",
-                        options: ["", "", "", ""],
-                        correctAnswer: [],
-                        score: 1,
-                      });
-                    }}>
-                    Nhiều lựa chọn
-                  </button>
-                  <button
-                    className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
-                    onClick={() => {
-                      setShowAddQuestion((prev) => !prev);
-                      setShowType((prev) => !prev);
-                      addQuestion({
-                        type: "text",
-                        id: nanoid(),
-                        questionText: "",
-                        options: [""],
-                        correctAnswer: "",
-                        score: 1,
-                      });
-                    }}>
-                    Văn bản
-                  </button>
-                </div>
-              </div>
-            )}
+          <AddQuestion
+            showAddQuestion={showAddQuestion}
+            setShowAddQuestion={setShowAddQuestion}
+            addQuestion={addQuestion}
+            setShowType={setShowType}
+            showType={showType}
+            nanoid={nanoid}
+          />
+          {/* --- Import câu hỏi từ Excel --- */}
+          <div className="mb-4">
+            <label className="font-semibold text-gray-700 block mb-2">
+              Import câu hỏi từ Excel:
+            </label>
+
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                const imported = await importQuestions(file);
+
+                imported.forEach((q) => addQuestion(q)); // thêm vào form
+              }}
+              className="w-full cursor-pointer border p-3 rounded-lg bg-white shadow"
+            />
+            <button
+              className="w-full cursor-pointer border p-3 rounded-lg bg-white shadow"
+              onClick={() => exportQuestions(questions)}>
+              Export câu hỏi:
+            </button>
           </div>
           {/* Lưu Form */}
           <Link to="/form">

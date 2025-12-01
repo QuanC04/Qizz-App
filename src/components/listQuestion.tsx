@@ -134,7 +134,7 @@ export default function ListQuestion({
                               newOptions[index] = e.target.value;
                               updateQuestion(question.id, {
                                 options: newOptions,
-                                correctAnswer: e.target.value,
+                                correctAnswer: newOptions,
                               });
                             }}
                             placeholder="Nhập đáp án"
