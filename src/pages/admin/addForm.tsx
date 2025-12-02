@@ -13,6 +13,7 @@ export default function AddForm() {
   const { user } = useAuth();
   const [showAddQuestion, setShowAddQuestion] = useState(true);
   const [showType, setShowType] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const {
     formId,
     title,
@@ -24,8 +25,15 @@ export default function AddForm() {
     deleteQuestion,
     saveForm,
     resetForm,
+    loadForm,
   } = useForm();
   useEffect(() => {
+    if (formId) {
+      loadForm(formId).then(() => setLoaded(true));
+    }
+  }, [formId]);
+  useEffect(() => {
+    if (!loaded) return;
     useForm.setState({
       createdBy: user?.email || user?.id || "unknown",
     });
@@ -34,7 +42,7 @@ export default function AddForm() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [title, questions]);
+  }, [title, questions, loaded]);
   useEffect(() => {
     useForm.setState({
       createdBy: user?.email || user?.id || "unknown",

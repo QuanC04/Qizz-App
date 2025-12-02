@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, handleGoogleLogin, loading, error, user } = useAuth();
+  const { handleLogin, handleGoogleLogin } = useAuth();
   const navigate = useNavigate();
 
   const onLogin = async () => {

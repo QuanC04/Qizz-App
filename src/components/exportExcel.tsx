@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { exportExcel } from "../utils/excel";
 import { ArrowDownToLine } from "lucide-react";
+import { formatTime } from "@/utils/formatTime";
 
 export function ExportExce({ submissions }: any) {
   const handleExportExcel = () => {
@@ -9,6 +10,7 @@ export function ExportExce({ submissions }: any) {
       UserEmail: s.userEmail,
       Điểm: s.totalScore,
       "Thời gian nộp": new Date(s.submitAt).toLocaleString(),
+      "Thời gian làm bài": s.timeSpent ? formatTime(s.timeSpent) : "--",
       ...s.answers, // thêm từng câu trả lời vào cột
     }));
     exportExcel(formatted, `Form_Submissions`);

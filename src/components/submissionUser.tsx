@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatTime } from "@/utils/formatTime";
 
 export function SubmissionRow({
   sub,
@@ -28,6 +29,9 @@ export function SubmissionRow({
           {sub.totalScore ?? 0}
         </td>
         <td className="p-3 text-gray-600 whitespace-nowrap">{sub.submitAt}</td>
+        <td className="p-3 text-center text-gray-600">
+          {sub.timeSpent ? formatTime(sub.timeSpent) : "--"}
+        </td>
         <td className="p-3 text-center">
           <button
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
@@ -39,7 +43,7 @@ export function SubmissionRow({
 
       {openIndex === i && (
         <tr className="bg-gray-50 border-t">
-          <td colSpan={5} className="p-4">
+          <td colSpan={6} className="p-4">
             <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-inner">
               <h3 className="font-semibold mb-2">
                 Câu trả lời của người dùng:

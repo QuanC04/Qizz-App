@@ -24,6 +24,7 @@ export default function ExamPage() {
   >([]);
   const [started, setStarted] = useState(false);
   const [submissionDone, setSubmissionDone] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
   useEffect(() => {
     getForm(formId);
   }, [formId]);
@@ -65,7 +66,10 @@ export default function ExamPage() {
 
             {/* Button */}
             <button
-              onClick={() => setStarted(true)}
+              onClick={() => {
+                setStarted(true);
+                setStartTime(Date.now());
+              }}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors border-2 border-blue-600 cursor-pointer">
               Bắt đầu làm bài
             </button>
@@ -83,9 +87,15 @@ export default function ExamPage() {
             formId={formId}
             submissionDone={submissionDone}
             onTimeUp={async () => {
-              await submitForm(formId, user?.id as string, answers);
+              const timeSpent = startTime
+                ? Math.floor((Date.now() - startTime) / 1000)
+                : 0;
+              await submitForm(formId, user?.id as string, answers, timeSpent);
               setSubmissionDone(true);
               navigate({ to: `/exam/response/${formId}` });
+            }}
+            onStartTimer={() => {
+              if (!startTime) setStartTime(Date.now());
             }}
           />
         </div>
@@ -226,7 +236,10 @@ export default function ExamPage() {
               return;
             }
 
-            await submitForm(formId, user.id, answers);
+            const timeSpent = startTime
+              ? Math.floor((Date.now() - startTime) / 1000)
+              : 0;
+            await submitForm(formId, user.id, answers, timeSpent);
             setSubmissionDone(true);
             navigate({ to: `/exam/response/${formId}` });
           }}

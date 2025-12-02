@@ -39,8 +39,10 @@ interface Submissions {
   submissionId: string;
   userId: string;
   answer: Record<string, any>[];
+
   totalScore: number;
   submitAt: Date;
+  timeSpent: number; // thời gian làm bài tính bằng giây
 }
 interface FormState {
   formId: string;
@@ -54,6 +56,7 @@ interface FormState {
   requireLogin: boolean;
   oneSubmissionOnly: boolean;
   lastSubmissionId:string;
+  loadForm: (formId: string) => Promise<void>;
   setSettings: (settings: {
     requireLogin?: boolean;
     oneSubmissionOnly?: boolean;
@@ -75,7 +78,7 @@ interface FormState {
     formId: string,
     userId: string,
     answers: Record<string, any>[],
-
+    timeSpent?: number,
   ) => Promise<void>;
 }
 export const useForm = create<FormState>((set, get) => ({
@@ -95,6 +98,18 @@ export const useForm = create<FormState>((set, get) => ({
       ...state,
       ...settings,
     })),
+    loadForm: async (formId) => {
+  const ref = doc(db, "forms", formId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+  useForm.setState({
+    title: data.title || { titleText: "", description: "" },
+    questions: data.questions || [],
+    createdBy: data.createdBy || "",
+  });
+},
   setTitle: (titleText, description) =>
     set((state) => ({
       title: { ...state.title, titleText, description },
@@ -159,6 +174,7 @@ export const useForm = create<FormState>((set, get) => ({
       title: { titleText: "", description: "" },
       questions: [],
     }))
+    return newId;
 },
   updateForm: () =>
     set(() => ({
@@ -227,7 +243,7 @@ export const useForm = create<FormState>((set, get) => ({
       return [];
     }
   },
-  submitForm: async (formId,userId, answers) => {
+  submitForm: async (formId,userId, answers, timeSpent) => {
     try {
       const { getForm } = get();
       const submissionId = nanoid();
@@ -321,6 +337,7 @@ if (formData?.oneSubmissionOnly && userId) {
           answers: convertedAnswers,
           totalScore,
           submitAt: new Date().toISOString(),
+          timeSpent: timeSpent || 0,
         },
         { merge: false }
       );

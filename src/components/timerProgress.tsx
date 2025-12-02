@@ -7,6 +7,7 @@ interface TimerProgressProps {
   onTimeUp?: () => void;
   formId: string; // thêm formId để phân biệt bài thi
   submissionDone?: boolean; // true nếu đã nộp bài → reset timer
+  onStartTimer?: () => void; // callback khi timer bắt đầu
 }
 
 export default function TimerProgress({
@@ -14,6 +15,7 @@ export default function TimerProgress({
   onTimeUp,
   formId,
   submissionDone = false,
+  onStartTimer,
 }: TimerProgressProps) {
   const TOTAL_TIME = timerMinutes * 60;
 
@@ -35,6 +37,7 @@ export default function TimerProgress({
       // lần đầu vào → lưu startTime
       startTime = Date.now().toString();
       localStorage.setItem(STORAGE_KEY, startTime);
+      onStartTimer && onStartTimer();
     }
 
     // Tính timeLeft remaining

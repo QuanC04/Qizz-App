@@ -19,7 +19,7 @@ export const adminRoute = _adminRoute.addChildren([
   }),
   createRoute({
     getParentRoute: () => _adminRoute,
-    path: "/create-form",
+    path: "/create-form/$formId",
     component: () => <AddForm />,
   }),
   createRoute({
