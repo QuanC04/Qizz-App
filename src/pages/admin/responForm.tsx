@@ -1,15 +1,12 @@
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../stores/useAuth";
 import { useForm, type Question } from "../../stores/useForm";
-
 import { Check } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
-
 import QuestionResult from "@/components/questionText";
+type AnswerValue = string | number | number[] | null;
 
 export default function FormDetail() {
-  const { getUser } = useAuth();
   const { formId } = useParams({ from: "/form/$formId" });
   const { getSubmissionForm, getForm } = useForm();
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -53,31 +50,32 @@ export default function FormDetail() {
     // Câu trong submission dạng "Câu 1", "Câu 2"...
     const answerKey = `Câu ${qi + 1}`;
 
-    const answers = submissions.map((s) => {
+    const answers: AnswerValue[] = submissions.map((s) => {
       const ansObj = s.answers?.find(
-        (a: any) => Object.keys(a)[0] === answerKey
+        (a: Record<string, unknown>) => Object.keys(a)[0] === answerKey
       );
-      return ansObj ? Object.values(ansObj)[0] : null; // dạng "A,B" hoặc "A"
+      if (!ansObj) return null;
+
+      const val = Object.values(ansObj)[0];
+      if (typeof val === "string" || typeof val === "number") return val;
+      return null;
     });
 
-    // Convert về dạng index để so sánh với đúng
-    const parsedAnswers = answers.map((a) => {
+    // --- Chuyển đổi answers thành số, mảng số, hoặc giữ text ---
+    const parsedAnswers: AnswerValue[] = answers.map((a) => {
       if (!a) return null;
 
-      // Nếu checkbox -> "A,B" => ["A","B"] => [0,1]
       if (typeof a === "string" && a.includes(",")) {
         return a.split(",").map((letter) => letter.charCodeAt(0) - 65);
       }
 
-      // Radio -> "A" => 0
       if (typeof a === "string") {
         return a.charCodeAt(0) - 65;
       }
-      if (q.type === "text" || q.type === "paragraph") {
-        return a;
-      }
 
-      return null;
+      if (typeof a === "number") return a;
+
+      return a;
     });
 
     // Đếm từng lựa chọn
@@ -96,27 +94,25 @@ export default function FormDetail() {
     let correctCount = 0;
 
     parsedAnswers.forEach((ans) => {
-      if (ans == null) return;
+      const correct = q.correctAnswer as AnswerValue;
 
-      if (Array.isArray(ans) && Array.isArray(q.correctAnswer)) {
-        // checkbox
+      if (ans == null || correct == null) return;
+
+      if (Array.isArray(ans) && Array.isArray(correct)) {
+        const ansArray = ans as number[];
+        const correctArray = correct as number[];
         if (
-          ans.length === q.correctAnswer.length &&
-          ans.every((x) => q.correctAnswer?.includes(x))
+          ansArray.length === correctArray.length &&
+          ansArray.every((x) => correctArray.includes(x))
         ) {
           correctCount++;
         }
-      } else if (
-        typeof ans === "string" &&
-        typeof q.correctAnswer === "string"
-      ) {
-        // text
-        if (ans.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) {
+      } else if (typeof ans === "string" && typeof correct === "string") {
+        if (ans.trim().toLowerCase() === correct.trim().toLowerCase()) {
           correctCount++;
         }
-      } else {
-        // radio
-        if (ans === q.correctAnswer) correctCount++;
+      } else if (typeof ans === "number" && typeof correct === "number") {
+        if (ans === correct) correctCount++;
       }
     });
 
@@ -126,7 +122,7 @@ export default function FormDetail() {
       label: opt,
       count: counts[i],
       isCorrect: Array.isArray(correctIndex)
-        ? correctIndex.includes(i)
+        ? (correctIndex as number[]).includes(i)
         : i === correctIndex,
     }));
 
@@ -168,7 +164,7 @@ export default function FormDetail() {
       </div>
       {/* --- BIỂU ĐỒ THEO CÂU HỎI --- */}
       <div className=" gap-y-6 mb-8 flex flex-col items-center  ">
-        {questionStats?.map((question, i) => (
+        {questionStats?.map((question: any, i: number) => (
           <div key={i} className="p-6 rounded-2xl shadow-sm bg-white w-4/5">
             <h2 className="text-lg font-medium mb-1">
               {i + 1}. {question.text}{" "}
@@ -189,7 +185,7 @@ export default function FormDetail() {
             ) : (
               <div className="flex items-center justify-between">
                 <div>
-                  {question.options.map((opt, j) => (
+                  {question.options.map((opt: any, j: number) => (
                     <div
                       key={j}
                       className="grid grid-cols-[20px_1fr_20px_1px] items-center gap-2 mb-2">
@@ -219,7 +215,7 @@ export default function FormDetail() {
                       dataKey="value"
                       label={renderCustomLabel}
                       labelLine={false}>
-                      {question.chartData.map((entry, index) => (
+                      {question.chartData.map((index: number) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}

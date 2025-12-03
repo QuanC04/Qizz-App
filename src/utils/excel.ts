@@ -52,20 +52,24 @@ import Excel from "exceljs";
     sheet?.eachRow((row, index) => {
         if (index === 1) return; // skip header
 
+        const values = row.values as any[];
+        if (!values || values.length < 7) return;
+
         const [
-        id,
-        type,
-        questionText,
-        options,
-        correctAnswer,
-        score
-        ] = row.values.slice(1); // vì row.values[0] là undefined
+            ,
+            id,
+            type,
+            questionText,
+            options,
+            correctAnswer,
+            score
+        ] = values; // row.values[0] là undefined
 
         questions.push({
-        id,
-        type,
-        questionText,
-        options: type === "text" ? JSON.parse(correctAnswer) as string[] : JSON.parse(options),
+        id: id as string,
+        type: type as string,
+        questionText: questionText as string,
+        options: type === "text" ? JSON.parse(correctAnswer as string) as string[] : JSON.parse(options as string),
 
   // Nếu text → giữ nguyên text
   correctAnswer:

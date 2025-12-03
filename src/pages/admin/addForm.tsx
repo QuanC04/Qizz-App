@@ -1,7 +1,7 @@
-import { Plus, Send, Trash2 } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 import { useForm } from "../../stores/useForm";
 import { nanoid } from "nanoid";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../stores/useAuth";
 import ShareExamLinkDialog from "../../components/dialogShareLink";
 import ListQuestion from "@/components/listQuestion";

@@ -29,10 +29,10 @@ export default function ListQuestion({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = questions.findIndex((q) => q.id === active.id);
-    const newIndex = questions.findIndex((q) => q.id === over.id);
+    const oldIndex = questions.findIndex((q: Question) => q.id === active.id);
+    const newIndex = questions.findIndex((q: Question) => q.id === over.id);
 
-    const reordered = arrayMove(questions, oldIndex, newIndex);
+    const reordered: Question[] = arrayMove(questions, oldIndex, newIndex);
     useForm.setState({ questions: reordered });
   };
 
@@ -42,9 +42,9 @@ export default function ListQuestion({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}>
       <SortableContext
-        items={questions.map((q) => q.id)}
+        items={questions.map((q: Question) => q.id)}
         strategy={verticalListSortingStrategy}>
-        {questions.map((question, index) => (
+        {questions.map((question: Question, index: number) => (
           <SortableQuestion key={question.id} id={question.id}>
             <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col gap-4 mb-4">
               {/* Header câu hỏi */}

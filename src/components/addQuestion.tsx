@@ -11,8 +11,8 @@ export default function AddQuestion({
       {showAddQuestion && (
         <button
           onClick={() => {
-            setShowAddQuestion((prev) => !prev);
-            setShowType((prev) => !prev);
+            setShowAddQuestion((prev: any) => !prev);
+            setShowType((prev: any) => !prev);
           }}
           className="mt-6 w-full bg-white border-2 border-dashed  hover:border-purple-600 hover:text-purple-600 font-semibold py-4 rounded-xl  flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] transition-all">
           + Thêm câu hỏi
@@ -27,8 +27,8 @@ export default function AddQuestion({
             <button
               className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
               onClick={() => {
-                setShowAddQuestion((prev) => !prev);
-                setShowType((prev) => !prev);
+                setShowAddQuestion((prev: boolean) => !prev);
+                setShowType((prev: boolean) => !prev);
                 addQuestion({
                   type: "radio",
                   id: nanoid(),
@@ -43,8 +43,8 @@ export default function AddQuestion({
             <button
               className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
               onClick={() => {
-                setShowAddQuestion((prev) => !prev);
-                setShowType((prev) => !prev);
+                setShowAddQuestion((prev: boolean) => !prev);
+                setShowType((prev: boolean) => !prev);
                 addQuestion({
                   type: "checkbox",
                   id: nanoid(),
@@ -59,8 +59,8 @@ export default function AddQuestion({
             <button
               className="flex flex-col items-center justify-center border rounded-lg p-3 hover:scale-[1.02]  transition-all cursor-pointer"
               onClick={() => {
-                setShowAddQuestion((prev) => !prev);
-                setShowType((prev) => !prev);
+                setShowAddQuestion((prev: boolean) => !prev);
+                setShowType((prev: boolean) => !prev);
                 addQuestion({
                   type: "text",
                   id: nanoid(),

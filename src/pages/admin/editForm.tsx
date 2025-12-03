@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "../../stores/useForm";
 import { Link, useParams } from "@tanstack/react-router";
-import { Plus, Send, Trash2 } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 import { nanoid } from "nanoid";
 import ShareExamLinkDialog from "../../components/dialogShareLink";
 import { useAuth } from "../../stores/useAuth";

@@ -285,21 +285,22 @@ if (formData?.oneSubmissionOnly && userId) {
         }
          else if (question.type === "text") {
     // correct là string[]; userAnswer là string
-    let correctList = question.correctAnswer ;
-   if (typeof correctList === "string") {
+    let correctList: (string | number)[] = [];
+    const rawCorrect = question.correctAnswer;
+   if (typeof rawCorrect === "string") {
     try {
-      correctList = JSON.parse(correctList);
+      correctList = JSON.parse(rawCorrect);
     } catch {
-      correctList = [correctList];
+      correctList = [rawCorrect];
     }
+  } else if (Array.isArray(rawCorrect)) {
+    correctList = rawCorrect;
+  } else if (rawCorrect !== null && rawCorrect !== undefined) {
+    correctList = [rawCorrect as any];
   }
 
-  // Đảm bảo correctList là array
-  if (!Array.isArray(correctList)) {
-    correctList = [correctList];
-  }
     const normalizedUser = String(userAnswer ?? "").trim().toLowerCase();
-    const matched = correctList?.some((ans) => String(ans).trim().toLowerCase() === normalizedUser);
+    const matched = correctList?.some((ans: string | number) => String(ans).trim().toLowerCase() === normalizedUser);
     if (matched) totalScore += question.score;
   }
    else if (userAnswer === question.correctAnswer)
