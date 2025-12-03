@@ -1,11 +1,14 @@
 {
   "name": "a",
   "private": true,
+  "homepage": "https://QuanC04.github.io/Qizz-App/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -25,6 +28,7 @@
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "firebase": "^12.3.0",
+    "gh-pages": "^6.3.0",
     "lucide-react": "^0.545.0",
     "nanoid": "^5.1.6",
     "react": "^19.1.1",
