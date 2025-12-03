@@ -13,7 +13,6 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  base: '/Qizz-App/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
