@@ -6,6 +6,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+     base: '/Qizz-App/',
   plugins: [react(),
     tanstackRouter({
       target: 'react',
