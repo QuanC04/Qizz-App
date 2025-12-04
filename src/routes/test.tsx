@@ -4,6 +4,6 @@ import TestLayout from "../layout/test";
 
 export const testRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/test",
+  path: "/",
   component: () => <TestLayout />,
 });
